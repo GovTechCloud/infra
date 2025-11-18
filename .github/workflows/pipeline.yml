@@ -2,10 +2,11 @@ name: 'Terraform'
 
 on:
   push:
-    # branches:
-    #   - main
-    #   - dev
+    paths:
+      - 'azure/**'
   pull_request:
+    paths:
+      - 'azure/**'
 
 permissions:
   contents: read
@@ -20,17 +21,18 @@ jobs:
     defaults:
       run:
         shell: bash
+        working-directory: ./azure
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Azure login
-      uses: azure/login@v1.4.6
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    # - name: Azure login
+    #   uses: azure/login@v1.4.6
+    #   with:
+    #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
