@@ -1,12 +1,13 @@
 name: 'Azure Terraform'
 
 on:
-  push:
-    paths:
-      - 'azure/**'
-  pull_request:
-    paths:
-      - 'azure/**'
+  # push:
+  #   paths:
+  #     - 'azure/**'
+  # pull_request:
+  #   paths:
+  #     - 'azure/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
