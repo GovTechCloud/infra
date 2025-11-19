@@ -20,8 +20,3 @@ terraform {
 provider "azurerm" {
   features {}
 }
-
-resource "azurerm_resource_group" "main" {
-  name     = "rg-${terraform.workspace}"
-  location = "eastus"
-}
