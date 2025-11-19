@@ -30,7 +30,7 @@ resource "azurerm_network_security_group" "frontend" {
   # Rules for public access (uncomment to make frontend public)
   security_rule {
     name                       = "AllowHTTPSInbound"
-    priority                   = 90  # Lower priority than DenyAllInbound (200) to be evaluated first
+    priority                   = 100 # 100 (minimum allowed)
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -42,7 +42,7 @@ resource "azurerm_network_security_group" "frontend" {
 
   security_rule {
     name                       = "AllowHTTPInbound"
-    priority                   = 95  # Lower priority than DenyAllInbound (200)
+    priority                   = 101 # 101 (higher than 100, still lower than 200)
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"

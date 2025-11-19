@@ -19,7 +19,7 @@ Este documento proporciona una descripción general de alto nivel de la arquitec
 |   | Ingress:                              |                      |
 |   |   - Internet (443/TCP - HTTPS)        |                      |
 |   |   - Internet (80/TCP - HTTP)          |                      |
-|   |   - Deny All Inbound (Lower Priority) |                      |
+|   |   - Deny All Inbound (Priority 200)   |
 |   | Egress:                               |                      |
 |   |   - To Backend (8080/TCP)             |                      |
 |   |   - To Internet (*)                   |                      |
