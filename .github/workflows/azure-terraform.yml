@@ -1,4 +1,4 @@
-name: 'Terraform'
+name: 'Azure Terraform'
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   terraform:
-    name: 'Terraform'
+    name: 'Manage Azure Resources'
     runs-on: ubuntu-latest
     environment: production
 
@@ -23,16 +23,12 @@ jobs:
         shell: bash
         working-directory: ./azure
 
+    env:
+      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
-    # - name: Azure login
-    #   uses: azure/login@v1.4.6
-    #   with:
-    #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
-    #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-    #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
@@ -49,5 +45,5 @@ jobs:
       run: terraform plan -input=false
 
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false
+      if: github.event_name == 'push'
