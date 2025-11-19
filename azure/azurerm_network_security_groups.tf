@@ -1,18 +1,18 @@
-resource "azurerm_network_security_group" "frontend" {
-  name                = "nsg-frontend-${local.workspace_suffix}"
+resource "azurerm_network_security_group" "public" {
+  name                = "nsg-public-${local.workspace_suffix}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   security_rule {
-    name                       = "AllowFrontendToBackend"
+    name                       = "AllowPublicToService"
     priority                   = 100
     direction                  = "Outbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "8080" # Assuming backend runs on port 8080
-    source_address_prefix      = azurerm_subnet.frontend.address_prefixes[0]
-    destination_address_prefix = azurerm_subnet.backend.address_prefixes[0]
+    source_address_prefix      = azurerm_subnet.public.address_prefixes[0]
+    destination_address_prefix = azurerm_subnet.service.address_prefixes[0]
   }
 
   security_rule {
@@ -23,11 +23,11 @@ resource "azurerm_network_security_group" "frontend" {
     protocol                   = "*"
     source_port_range          = "*"
     destination_port_range     = "*"
-    source_address_prefix      = azurerm_subnet.frontend.address_prefixes[0]
+    source_address_prefix      = azurerm_subnet.public.address_prefixes[0]
     destination_address_prefix = "Internet"
   }
 
-  # Rules for public access (uncomment to make frontend public)
+  # Rules for public access (comment to make private)
   security_rule {
     name                       = "AllowHTTPSInbound"
     priority                   = 100 # 100 (minimum allowed)
@@ -37,7 +37,7 @@ resource "azurerm_network_security_group" "frontend" {
     source_port_range          = "*"
     destination_port_range     = "443"
     source_address_prefix      = "Internet"
-    destination_address_prefix = azurerm_subnet.frontend.address_prefixes[0]
+    destination_address_prefix = azurerm_subnet.public.address_prefixes[0]
   }
 
   security_rule {
@@ -49,7 +49,7 @@ resource "azurerm_network_security_group" "frontend" {
     source_port_range          = "*"
     destination_port_range     = "80"
     source_address_prefix      = "Internet"
-    destination_address_prefix = azurerm_subnet.frontend.address_prefixes[0]
+    destination_address_prefix = azurerm_subnet.public.address_prefixes[0]
   }
   # End public access
 
@@ -66,45 +66,45 @@ resource "azurerm_network_security_group" "frontend" {
   }
 
   security_rule {
-    name                       = "DenyFrontendToDB"
+    name                       = "DenyPublicToData"
     priority                   = 120
     direction                  = "Outbound"
     access                     = "Deny"
     protocol                   = "*"
     source_port_range          = "*"
     destination_port_range     = "*"
-    source_address_prefix      = azurerm_subnet.frontend.address_prefixes[0]
-    destination_address_prefix = azurerm_subnet.db.address_prefixes[0]
+    source_address_prefix      = azurerm_subnet.public.address_prefixes[0]
+    destination_address_prefix = azurerm_subnet.data.address_prefixes[0]
   }
 }
 
-resource "azurerm_network_security_group" "backend" {
-  name                = "nsg-backend-${local.workspace_suffix}"
+resource "azurerm_network_security_group" "service" {
+  name                = "nsg-service-${local.workspace_suffix}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   security_rule {
-    name                       = "AllowFrontendToBackendInbound"
+    name                       = "AllowPublicToServiceInbound"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_range     = "8080" # Assuming backend runs on port 8080
-    source_address_prefix      = azurerm_subnet.frontend.address_prefixes[0]
-    destination_address_prefix = azurerm_subnet.backend.address_prefixes[0]
+    destination_port_range     = "8080" # Assuming service runs on port 8080
+    source_address_prefix      = azurerm_subnet.public.address_prefixes[0]
+    destination_address_prefix = azurerm_subnet.service.address_prefixes[0]
   }
 
   security_rule {
-    name                       = "AllowBackendToDB"
+    name                       = "AllowServiceToData"
     priority                   = 110
     direction                  = "Outbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "1433" # Assuming Azure SQL Database on port 1433
-    source_address_prefix      = azurerm_subnet.backend.address_prefixes[0]
-    destination_address_prefix = azurerm_subnet.db.address_prefixes[0]
+    source_address_prefix      = azurerm_subnet.service.address_prefixes[0]
+    destination_address_prefix = azurerm_subnet.data.address_prefixes[0]
   }
 
   security_rule {
@@ -120,33 +120,33 @@ resource "azurerm_network_security_group" "backend" {
   }
 
   security_rule {
-    name                       = "DenyBackendOutboundInternet"
+    name                       = "DenyServiceOutboundInternet"
     priority                   = 120
     direction                  = "Outbound"
     access                     = "Deny"
     protocol                   = "*"
     source_port_range          = "*"
     destination_port_range     = "*"
-    source_address_prefix      = azurerm_subnet.backend.address_prefixes[0]
+    source_address_prefix      = azurerm_subnet.service.address_prefixes[0]
     destination_address_prefix = "Internet"
   }
 }
 
-resource "azurerm_network_security_group" "db" {
-  name                = "nsg-db-${local.workspace_suffix}"
+resource "azurerm_network_security_group" "data" {
+  name                = "nsg-data-${local.workspace_suffix}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   security_rule {
-    name                       = "AllowBackendToDBInbound"
+    name                       = "AllowServiceToDataInbound"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "1433" # Assuming Azure SQL Database on port 1433
-    source_address_prefix      = azurerm_subnet.backend.address_prefixes[0]
-    destination_address_prefix = azurerm_subnet.db.address_prefixes[0]
+    source_address_prefix      = azurerm_subnet.service.address_prefixes[0]
+    destination_address_prefix = azurerm_subnet.data.address_prefixes[0]
   }
 
   security_rule {
@@ -174,17 +174,17 @@ resource "azurerm_network_security_group" "db" {
   }
 }
 
-resource "azurerm_subnet_network_security_group_association" "frontend" {
-  subnet_id                 = azurerm_subnet.frontend.id
-  network_security_group_id = azurerm_network_security_group.frontend.id
+resource "azurerm_subnet_network_security_group_association" "public" {
+  subnet_id                 = azurerm_subnet.public.id
+  network_security_group_id = azurerm_network_security_group.public.id
 }
 
-resource "azurerm_subnet_network_security_group_association" "backend" {
-  subnet_id                 = azurerm_subnet.backend.id
-  network_security_group_id = azurerm_network_security_group.backend.id
+resource "azurerm_subnet_network_security_group_association" "service" {
+  subnet_id                 = azurerm_subnet.service.id
+  network_security_group_id = azurerm_network_security_group.service.id
 }
 
-resource "azurerm_subnet_network_security_group_association" "db" {
-  subnet_id                 = azurerm_subnet.db.id
-  network_security_group_id = azurerm_network_security_group.db.id
+resource "azurerm_subnet_network_security_group_association" "data" {
+  subnet_id                 = azurerm_subnet.data.id
+  network_security_group_id = azurerm_network_security_group.data.id
 }

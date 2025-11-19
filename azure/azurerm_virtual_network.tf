@@ -6,25 +6,25 @@ resource "azurerm_virtual_network" "main" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
-resource "azurerm_subnet" "frontend" {
-  name                 = "subnet-frontend-${local.workspace_suffix}"
+resource "azurerm_subnet" "public" {
+  name                 = "subnet-public-${local.workspace_suffix}"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = [local.subnet_frontend_cidrs[local.workspace_suffix]]
+  address_prefixes     = [local.subnet_public_cidrs[local.workspace_suffix]]
 }
 
-resource "azurerm_subnet" "backend" {
-  name                 = "subnet-backend-${local.workspace_suffix}"
+resource "azurerm_subnet" "service" {
+  name                 = "subnet-service-${local.workspace_suffix}"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = [local.subnet_backend_cidrs[local.workspace_suffix]]
+  address_prefixes     = [local.subnet_service_cidrs[local.workspace_suffix]]
 }
 
-resource "azurerm_subnet" "db" {
-  name                 = "subnet-db-${local.workspace_suffix}"
+resource "azurerm_subnet" "data" {
+  name                 = "subnet-data-${local.workspace_suffix}"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = [local.subnet_db_cidrs[local.workspace_suffix]]
+  address_prefixes     = [local.subnet_data_cidrs[local.workspace_suffix]]
 }
 
 
@@ -33,17 +33,17 @@ output "virtual_network_name" {
   value       = azurerm_virtual_network.main.name
 }
 
-output "subnet_frontend_id" {
-  description = "The ID of the frontend subnet"
-  value       = azurerm_subnet.frontend.id
+output "subnet_public_id" {
+  description = "The ID of the public subnet"
+  value       = azurerm_subnet.public.id
 }
 
-output "subnet_backend_id" {
-  description = "The ID of the backend subnet"
-  value       = azurerm_subnet.backend.id
+output "subnet_service_id" {
+  description = "The ID of the service subnet"
+  value       = azurerm_subnet.service.id
 }
 
-output "subnet_db_id" {
-  description = "The ID of the db subnet"
-  value       = azurerm_subnet.db.id
+output "subnet_dat-id" {
+  description = "The ID of the data subnet"
+  value       = azurerm_subnet.data.id
 }

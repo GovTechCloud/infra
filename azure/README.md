@@ -1,3 +1,61 @@
+# Diagrama de la Topología de Red
+
+
+```
++-------------------------------------------------------------------------------+
+|                             Virtual Network (VNet)                            |
+|                                                                               |
+|   +-------------------+     +-------------------+     +-------------------+   |
+|   |   Public Subnet   |<--->|  Service Subnet   |<--->|    Data Subnet    |   |
+|   | (subnet-public)   |     | (subnet-service)  |     |   (subnet-data)   |   |
+|   +-------------------+     +-------------------+     +-------------------+   |
+|             |                       |                       |                 |
+|             |                       |                       |                 |
+|   +-------------------+     +-------------------+     +-------------------+   |
+|   |   nsg-public      |     |   nsg-service     |     |    nsg-data       |   |
+|   | (Public Access)   |     | (Private Access,  |     | (Highly Private,  |   |
+|   | (HTTPS/HTTP)      |     |  Inbound from     |     |  Inbound from     |   |
+|   | (Can be made      |     |  Public, Outbound |     |  Service Only)    |   |
+|   |  private)         |     |  to Data)         |     |                   |   |
+|   +-------------------+     +-------------------+     +-------------------+   |
++-------------------------------------------------------------------------------+
+```
+
+**Explicación del Diagrama de Topología:**
+
+*   **Subred Pública (`subnet-public`)**: Esta subred está destinada a servicios de cara al público. Está asociada con `nsg-public`.
+    *   **`nsg-public`**: Por defecto, permite el tráfico entrante HTTPS/HTTP, haciendo que los servicios dentro de esta subred sean accesibles públicamente. Se puede configurar para la privacidad comentando reglas específicas.
+*   **Subred de Servicios (`subnet-service`)**: Esta subred es para sus servicios privados. Está asociada con `nsg-service`.
+    *   **`nsg-service`**: Este NSG es privado. Permite el tráfico entrante solo desde la subred `public` (por ejemplo, si su aplicación de cara al público necesita comunicarse con una API privada) y el tráfico saliente hacia la subred `data`. Deniega explícitamente el acceso a Internet desde otros puntos.
+*   **Subred de Datos (`subnet-data`)**: Esta subred está diseñada para el almacenamiento de datos altamente privado, como bases de datos. Está asociada con `nsg-data`.
+    *   **`nsg-data`**: Este NSG es altamente privado. Solo permite el tráfico entrante desde la subred `service`, asegurando que solo los servicios privados autorizados puedan acceder a sus datos. Todo el tráfico entrante y saliente restante está denegado.
+
+---
+
+# Diagrama de Reglas de Seguridad
+
+## `nsg-public` (NSG para Servicios Públicos)
+
+*   **AllowPublicToService** (Salida): TCP 8080 a Subred de Servicios.
+*   **AllowOutboundInternet** (Salida): Todo el tráfico a Internet.
+*   **AllowHTTPSInbound** (Entrada): TCP 443 (HTTPS) desde Internet.
+*   **AllowHTTPInbound** (Entrada): TCP 80 (HTTP) desde Internet.
+*   **DenyAllInbound** (Entrada): Denegar todo el tráfico entrante no permitido.
+*   **DenyPublicToData** (Salida): Denegar tráfico a Subred de Datos.
+
+## `nsg-service` (NSG para Servicios Privados)
+
+*   **AllowPublicToServiceInbound** (Entrada): TCP 8080 desde Subred Pública.
+*   **AllowServiceToData** (Salida): TCP 1433 (Azure SQL) a Subred de Datos.
+*   **DenyAllInbound** (Entrada): Denegar todo el tráfico entrante no permitido.
+*   **DenyServiceOutboundInternet** (Salida): Denegar tráfico a Internet.
+
+## `nsg-data` (NSG para Datos)
+
+*   **AllowServiceToDataInbound** (Entrada): TCP 1433 (Azure SQL) desde Subred de Servicios.
+*   **DenyAllInbound** (Entrada): Denegar todo el tráfico entrante no permitido.
+*   **DenyAllOutbound** (Salida): Denegar todo el tráfico saliente no permitido.
+
 # Azure Network
 
 Este documento proporciona una descripción general de alto nivel de la arquitectura de red de Azure definida en este repositorio.
@@ -14,12 +72,12 @@ Este documento proporciona una descripción general de alto nivel de la arquitec
 |              | Public (HTTPS/HTTP)                               |
 |              V                                                   |
 |   +---------------------------------------+                      |
-|   | Subnet: Frontend (10.X.1.0/24)        |                      |
-|   | Associated NSG: nsg-frontend          |                      |
+|   | Subnet: Public (10.X.1.0/24)          |                      |
+|   | Associated NSG: nsg-public            |                      |
 |   | Ingress:                              |                      |
 |   |   - Internet (443/TCP - HTTPS)        |                      |
 |   |   - Internet (80/TCP - HTTP)          |                      |
-|   |   - Deny All Inbound (Priority 200)   |
+|   |   - Deny All Inbound (Priority 200)   |                      |
 |   | Egress:                               |                      |
 |   |   - To Backend (8080/TCP)             |                      |
 |   |   - To Internet (*)                   |                      |
@@ -28,8 +86,8 @@ Este documento proporciona una descripción general de alto nivel de la arquitec
 |              | Frontend to Backend (8080/TCP)                    |
 |              V                                                   |
 |   +---------------------------------------+                      |
-|   | Subnet: Backend (10.X.2.0/24)         |                      |
-|   | Associated NSG: nsg-backend           |                      |
+|   | Subnet: Service (10.X.2.0/24)         |                      |
+|   | Associated NSG: nsg-service           |                      |
 |   | Ingress:                              |                      |
 |   |   - From Frontend (8080/TCP)          |                      |
 |   | Egress:                               |                      |
@@ -41,8 +99,8 @@ Este documento proporciona una descripción general de alto nivel de la arquitec
 |              | Backend to DB (1433/TCP)                          |
 |              V                                                   |
 |   +---------------------------------------+                      |
-|   | Subnet: DB (10.X.3.0/24)              |                      |
-|   | Associated NSG: nsg-db                |                      |
+|   | Subnet: Data (10.X.3.0/24)            |                      |
+|   | Associated NSG: nsg-data              |                      |
 |   | Ingress:                              |                      |
 |   |   - From Backend (1433/TCP)           |                      |
 |   | Egress:                               |                      |
@@ -56,21 +114,3 @@ Este documento proporciona una descripción general de alto nivel de la arquitec
 *   `dev`: `10.2.X.X`
 *   `staging`: `10.1.X.X`
 *   `prod`: `10.0.X.X`
-
-### Elementos clave:
-
-* **Red virtual de Azure (VNet)**: La red principal aislada.
-
-* **Subredes**: Subredes dedicadas para el frontend, el backend y la base de datos.
-
-* **Grupos de seguridad de red (NSG)**: Controlan el flujo de tráfico para cada subred.
-
-* `nsg-frontend`: De forma predeterminada, es de acceso público (HTTPS/HTTP) y permite habilitar la privacidad comentando las reglas.
-
-* `nsg-backend`: Privado, permite el tráfico entrante desde el frontend y el saliente hacia la base de datos, y deniega el acceso a Internet desde otros puntos.
-
-* `nsg-db`: Altamente privado, permite el tráfico entrante solo desde el backend y deniega todo el tráfico entrante y saliente restante.
-
-### Conversión de la interfaz de usuario a privada:
-
-Para convertir la interfaz de usuario en privada, comente las reglas `AllowHTTPSInbound` y `AllowHTTPInbound` en el archivo `azurerm_network_security_groups.tf` dentro del recurso `nsg-frontend`. Esto activará la regla `DenyAllInbound`, bloqueando todo el acceso externo.
