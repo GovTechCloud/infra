@@ -1,10 +1,40 @@
-name: Test Manual Trigger
+name: 'Azure Terraform Destroy'
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
-  test:
+  destroy:
+    name: 'Destroy Azure Resources'
     runs-on: ubuntu-latest
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./azure
+
+    env:
+      TF_WORKSPACE: 'dev'
+
     steps:
-      - run: echo "Manual workflow trigger works!"
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Plan Destroy
+      run: terraform plan -destroy -input=false
+
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve -input=false
