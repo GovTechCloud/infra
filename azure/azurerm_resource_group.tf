@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "main" {
   name     = "rg-${terraform.workspace}"
-  location = "eastus"
+  location = "eastus2"
 }
 
 output "resource_group_name" {

@@ -27,6 +27,32 @@ resource "azurerm_network_security_group" "frontend" {
     destination_address_prefix = "Internet"
   }
 
+  # Rules for public access (uncomment to make frontend public)
+  security_rule {
+    name                       = "AllowHTTPSInbound"
+    priority                   = 90  # Lower priority than DenyAllInbound (200) to be evaluated first
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "Internet"
+    destination_address_prefix = azurerm_subnet.frontend.address_prefixes[0]
+  }
+
+  security_rule {
+    name                       = "AllowHTTPInbound"
+    priority                   = 95  # Lower priority than DenyAllInbound (200)
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "Internet"
+    destination_address_prefix = azurerm_subnet.frontend.address_prefixes[0]
+  }
+  # End public access
+
   security_rule {
     name                       = "DenyAllInbound"
     priority                   = 200
