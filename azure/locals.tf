@@ -1,4 +1,6 @@
 locals {
+  workspace_suffix = split("-", terraform.workspace)[length(split("-", terraform.workspace)) - 1]
+
   # Define distinct IP address ranges per workspace to avoid overlap
   vnet_cidrs = {
     dev     = "10.2.0.0/16"

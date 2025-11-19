@@ -1,30 +1,30 @@
 
 resource "azurerm_virtual_network" "main" {
-  name                = "vnet-${terraform.workspace}"
-  address_space       = [local.vnet_cidrs[terraform.workspace]]
+  name                = "vnet-${local.workspace_suffix}"
+  address_space       = [local.vnet_cidrs[local.workspace_suffix]]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 }
 
 resource "azurerm_subnet" "frontend" {
-  name                 = "subnet-frontend-${terraform.workspace}"
+  name                 = "subnet-frontend-${local.workspace_suffix}"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = [local.subnet_frontend_cidrs[terraform.workspace]]
+  address_prefixes     = [local.subnet_frontend_cidrs[local.workspace_suffix]]
 }
 
 resource "azurerm_subnet" "backend" {
-  name                 = "subnet-backend-${terraform.workspace}"
+  name                 = "subnet-backend-${local.workspace_suffix}"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = [local.subnet_backend_cidrs[terraform.workspace]]
+  address_prefixes     = [local.subnet_backend_cidrs[local.workspace_suffix]]
 }
 
 resource "azurerm_subnet" "db" {
-  name                 = "subnet-db-${terraform.workspace}"
+  name                 = "subnet-db-${local.workspace_suffix}"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = [local.subnet_db_cidrs[terraform.workspace]]
+  address_prefixes     = [local.subnet_db_cidrs[local.workspace_suffix]]
 }
 
 
