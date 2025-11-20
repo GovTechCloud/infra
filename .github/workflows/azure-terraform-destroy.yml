@@ -2,12 +2,6 @@ name: 'Azure Terraform Destroy'
 
 on:
   workflow_dispatch:
-  # push:
-  #   paths:
-  #     - 'azure/**'
-  # pull_request:
-  #   paths:
-  #     - 'azure/**'
 
 permissions:
   contents: read
