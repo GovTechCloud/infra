@@ -2,7 +2,7 @@
 
 # ==== REQUIRED VALUES ==========================
 ORG="GovTechCloud"
-REPO="infra"
+REPO="app-web"
 ENV="production"
 APP_NAME="github-oidc-$REPO"
 ROLE="Contributor"
