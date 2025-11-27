@@ -1,0 +1,132 @@
+name: 'Azure Terraform'
+
+on:
+  push:
+    branches:
+    paths:
+      - 'azure/**'
+      - '.github/workflows/pipeline-azure.yml'
+  pull_request:
+    paths:
+      - 'azure/**'
+      - '.github/workflows/pipeline-azure.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+
+  lint_and_validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./azure
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v1
+
+      - name: Install TFLint
+        run: |
+          curl -sSL https://github.com/terraform-linters/tflint/releases/latest/download/tflint_linux_amd64.zip -o tflint.zip
+          unzip tflint.zip
+          sudo mv tflint /usr/local/bin/
+          tflint --version
+
+      - name: Terraform fmt check
+        run: terraform fmt -check
+
+      - name: TFLint linting
+        run: tflint --recursive
+
+      - name: Terraform validate
+        run: terraform validate
+
+  security_scan:
+    runs-on: ubuntu-latest
+    needs: lint_and_validate
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./azure
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v1
+      - name: Terraform init and plan
+        run: |
+          terraform init
+          terraform plan -out plan.out
+          terraform show -json plan.out > plan.json
+
+      - name: Install Checkov
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install checkov
+
+      - name: Checkov security scan
+        run: checkov -f plan.json
+
+  # --------------------------------------------
+  # PLAN for feature branches(auto)
+  # --------------------------------------------
+  plan:
+    name: "Plan azure Resources"
+    runs-on: ubuntu-latest
+    needs: security_scan
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./azure
+
+    env:
+      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -input=false
+
+  # --------------------------------------------
+  # APPLY for main/dev (manual)
+  # --------------------------------------------
+  apply:
+    name: 'Apply azure Resources'
+    runs-on: ubuntu-latest
+    needs: plan
+    environment: production
+    if: github.event_name == 'workflow_dispatch'
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./azure
+
+    env:
+      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -input=false
