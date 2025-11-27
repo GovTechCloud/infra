@@ -19,14 +19,15 @@ permissions:
 env:
   TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
 
+defaults:
+  run:
+    shell: bash
+    working-directory: ./azure
+
 jobs:
 
   lint_and_validate:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./azure
 
     steps:
       - name: Checkout
@@ -59,10 +60,6 @@ jobs:
   security_scan:
     runs-on: ubuntu-latest
     needs: lint_and_validate
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./azure
 
     steps:
       - name: Checkout
@@ -83,10 +80,6 @@ jobs:
     name: "Plan azure Resources"
     runs-on: ubuntu-latest
     needs: security_scan
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./azure
 
     steps:
       - name: Checkout
@@ -109,11 +102,6 @@ jobs:
     needs: plan
     environment: production
     if: github.event_name == 'workflow_dispatch'
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./azure
 
     steps:
     - name: Checkout
