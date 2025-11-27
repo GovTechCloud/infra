@@ -64,9 +64,6 @@ jobs:
         shell: bash
         working-directory: ./azure
 
-    env:
-      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,34 +71,13 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
 
-      - name: Remove remote backend config temporarily
-        run: rm ./backend.tf
-
-      - name: Create local backend config file
-        run: |
-          cat <<EOF > backend.tf
-          terraform {
-            backend "local" {
-              path = "terraform.tfstate"
-            }
-          }
-          EOF
-
-      - name: Terraform init
-        run: terraform init
-
-      - name: Terraform plan
-        run: |
-          terraform plan -out plan.out
-          terraform show -json plan.out > plan.json
-
       - name: Install Checkov
         run: |
           python3 -m pip install --upgrade pip
           pip install checkov
 
       - name: Checkov security scan
-        run: checkov -f plan.json
+        run: checkov -d
 
   # --------------------------------------------
   # PLAN for feature branches(auto)
