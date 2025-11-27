@@ -90,10 +90,6 @@ jobs:
       - name: Terraform init
         run: terraform init
 
-      - name: Select or create Terraform workspace
-        run: |
-          terraform workspace select ${{ env.TF_WORKSPACE }} || terraform workspace new ${{ env.TF_WORKSPACE }}
-
       - name: Terraform plan
         run: |
           terraform plan -out plan.out
