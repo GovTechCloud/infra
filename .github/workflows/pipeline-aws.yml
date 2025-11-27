@@ -28,6 +28,9 @@ jobs:
         shell: bash
         working-directory: ./aws
 
+    env:
+      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v1
