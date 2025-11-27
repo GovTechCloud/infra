@@ -16,6 +16,9 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+
 jobs:
 
   lint_and_validate:
@@ -24,9 +27,6 @@ jobs:
       run:
         shell: bash
         working-directory: ./azure
-
-    env:
-      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
 
     steps:
       - name: Checkout
@@ -88,9 +88,6 @@ jobs:
         shell: bash
         working-directory: ./azure
 
-    env:
-      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -117,9 +114,6 @@ jobs:
       run:
         shell: bash
         working-directory: ./azure
-
-    env:
-      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
 
     steps:
     - name: Checkout
