@@ -77,11 +77,8 @@ jobs:
           pip install checkov
 
       - name: Checkov security scan
-        run: checkov -d
+        run: checkov -d ./azure
 
-  # --------------------------------------------
-  # PLAN for feature branches(auto)
-  # --------------------------------------------
   plan:
     name: "Plan azure Resources"
     runs-on: ubuntu-latest
@@ -109,9 +106,6 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -input=false
 
-  # --------------------------------------------
-  # APPLY for main/dev (manual)
-  # --------------------------------------------
   apply:
     name: 'Apply azure Resources'
     runs-on: ubuntu-latest
