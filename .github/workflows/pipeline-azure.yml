@@ -71,16 +71,24 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
 
-      - name: Prepare local backend config
-        run: echo 'path=terraform.tfstate' > local_backend.conf
+      - name: Remove remote backend config temporarily
+        run: rm ./backend.tf
 
-      - name: Terraform Init with local backend
-        run: terraform init -reconfigure -backend-config=local_backend.conf
-
-      - name: Terraform Plan and Save JSON
+      - name: Create local backend config file
         run: |
-          terraform plan -out=tfplan.binary
-          terraform show -json tfplan.binary > plan.json
+          cat <<EOF > backend.tf
+          terraform {
+            backend "local" {
+              path = "terraform.tfstate"
+            }
+          }
+          EOF
+
+      - name: Terraform init and plan
+        run: |
+          terraform init
+          terraform plan -out plan.out
+          terraform show -json plan.out > plan.json
 
       - name: Install Checkov
         run: |

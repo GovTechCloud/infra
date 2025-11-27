@@ -7,14 +7,6 @@ terraform {
       version = "~> 4.0"
     }
   }
-
-  backend "remote" {
-    organization = "dvtestorg"
-
-    workspaces {
-      prefix = "govtech-"
-    }
-  }
 }
 
 provider "azurerm" {
