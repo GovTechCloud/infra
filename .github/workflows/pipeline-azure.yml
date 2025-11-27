@@ -84,9 +84,15 @@ jobs:
           }
           EOF
 
-      - name: Terraform init and plan
+      - name: Terraform init
+        run: terraform init
+
+      - name: Select or create Terraform workspace
         run: |
-          terraform init
+          terraform workspace select ${{ env.TF_WORKSPACE }} || terraform workspace new ${{ env.TF_WORKSPACE }}
+
+      - name: Terraform plan
+        run: |
           terraform plan -out plan.out
           terraform show -json plan.out > plan.json
 
