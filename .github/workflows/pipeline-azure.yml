@@ -70,14 +70,17 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
-        with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Terraform init and plan
+      - name: Prepare local backend config
+        run: echo 'path=terraform.tfstate' > local_backend.conf
+
+      - name: Terraform Init with local backend
+        run: terraform init -reconfigure -backend-config=local_backend.conf
+
+      - name: Terraform Plan and Save JSON
         run: |
-          terraform init
-          terraform plan -out plan.out
-          terraform show -json plan.out > plan.json
+          terraform plan -out=tfplan.binary
+          terraform show -json tfplan.binary > plan.json
 
       - name: Install Checkov
         run: |
