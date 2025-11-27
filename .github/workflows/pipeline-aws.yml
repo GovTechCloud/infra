@@ -3,9 +3,6 @@ name: 'Aws Terraform'
 on:
   push:
     branches:
-      # - main
-      # - staging
-      # - dev
     paths:
       - 'aws/**'
       - '.github/workflows/pipeline-aws.yml'
@@ -32,8 +29,13 @@ jobs:
       TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Install TFLint
         run: |
@@ -63,8 +65,14 @@ jobs:
         working-directory: ./aws
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
       - name: Terraform init and plan
         run: |
           terraform init
@@ -95,9 +103,11 @@ jobs:
       TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: hashicorp/setup-terraform@v1
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
