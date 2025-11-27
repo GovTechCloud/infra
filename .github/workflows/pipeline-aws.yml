@@ -45,6 +45,9 @@ jobs:
       - name: TFLint linting
         run: tflint --recursive
 
+      - name: Terraform Init
+        run: terraform init
+
       - name: Terraform validate
         run: terraform validate
 
