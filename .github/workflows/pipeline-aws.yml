@@ -16,17 +16,19 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./aws
+
 jobs:
 
   lint_and_validate:
+    name: "Lint and validate"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./aws
-
-    env:
-      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
 
     steps:
       - name: Checkout
@@ -57,12 +59,9 @@ jobs:
         run: terraform validate
 
   security_scan:
+    name: "Scan Resources"
     runs-on: ubuntu-latest
     needs: lint_and_validate
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./aws
 
     steps:
       - name: Checkout
@@ -70,14 +69,6 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
-        with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: Terraform init and plan
-        run: |
-          terraform init
-          terraform plan -out plan.out
-          terraform show -json plan.out > plan.json
 
       - name: Install Checkov
         run: |
@@ -85,22 +76,12 @@ jobs:
           pip install checkov
 
       - name: Checkov security scan
-        run: checkov -f plan.json
+        run: checkov -d ./aws
 
-  # --------------------------------------------
-  # PLAN for feature branches(auto)
-  # --------------------------------------------
   plan:
-    name: "Plan Aws Resources"
+    name: "Plan aws Resources"
     runs-on: ubuntu-latest
     needs: security_scan
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./aws
-
-    env:
-      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
 
     steps:
       - name: Checkout
@@ -117,23 +98,12 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -input=false
 
-  # --------------------------------------------
-  # APPLY for main/dev (manual)
-  # --------------------------------------------
   apply:
-    name: 'Apply Aws Resources'
+    name: 'Apply aws Resources'
     runs-on: ubuntu-latest
     needs: plan
     environment: production
     if: github.event_name == 'workflow_dispatch'
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./aws
-
-    env:
-      TF_WORKSPACE: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
 
     steps:
     - name: Checkout
