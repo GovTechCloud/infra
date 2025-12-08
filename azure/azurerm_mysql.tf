@@ -23,21 +23,3 @@ resource "azurerm_mysql_flexible_server_firewall_rule" "allow_public_access" {
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "255.255.255.255"
 }
-
-# resource "null_resource" "db_populate" {
-#   depends_on = [azurerm_mysql_flexible_server.mysql]
-
-#   provisioner "local-exec" {
-#     command = <<EOT
-#       mysql -h ${azurerm_mysql_flexible_server.mysql.fqdn} \
-#             -P 3306 \
-#             -u adminuser \
-#             -p${var.mysql_admin_password} \
-#             -e "CREATE DATABASE IF NOT EXISTS mydb;"
-#       mysql -h ${azurerm_mysql_flexible_server.mysql.fqdn} \
-#             -P 3306 \
-#             -u adminuser \
-#             -p${var.mysql_admin_password} mydb < ./data/backup.sql
-#     EOT
-#   }
-# }
