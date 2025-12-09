@@ -8,7 +8,7 @@ resource "aws_security_group" "public_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.admin_ip]  # Tu IP → máxima seguridad
+    cidr_blocks = [var.admin_ip] # Tu IP → máxima seguridad
   }
 
   egress {
