@@ -1,6 +1,8 @@
 name: 'Azure Terraform Destroy'
 
 on:
+  push:
+    branches:
   workflow_dispatch:
 
 permissions:
@@ -19,7 +21,7 @@ jobs:
         working-directory: ./azure
 
     env:
-      TF_WORKSPACE: 'dev'
+      TF_WORKSPACE: 'prod'
 
     steps:
     - name: Checkout
