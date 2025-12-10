@@ -16,25 +16,51 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
+############################
+# SUBNET PÚBLICA
+############################
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
+  availability_zone       = "us-east-1a"
 
   tags = {
-    Name = "free-tier-public"
+    Name = "free-tier-public-1a"
   }
 }
 
+############################
+# SUBNETS PRIVADAS (2 AZ)
+############################
 resource "aws_subnet" "private" {
+<<<<<<< Updated upstream
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.2.0/24"
+=======
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1a"
+>>>>>>> Stashed changes
 
   tags = {
-    Name = "free-tier-private"
+    Name = "free-tier-private-1a"
   }
 }
 
+resource "aws_subnet" "private_2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "free-tier-private-1b"
+  }
+}
+
+############################
+# ROUTE TABLE PÚBLICA
+############################
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
 
