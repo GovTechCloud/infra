@@ -4,27 +4,12 @@ resource "aws_security_group" "public_sg" {
   description = "Public bastion SG"
   vpc_id      = aws_vpc.main.id
 
-<<<<<<< Updated upstream
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.admin_ip]  # Tu IP → máxima seguridad
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-=======
   lifecycle {
     prevent_destroy = true
     ignore_changes = [
       description,
       tags
     ]
->>>>>>> Stashed changes
   }
 
   tags = {
