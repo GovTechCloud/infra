@@ -6,9 +6,9 @@ Este proyecto es una aplicación completa que utiliza **Infraestructura como Có
 
 ## Repositorios
 
-[Infra](https://github.com/GovTechCloud/infra)
-[Backend](https://github.com/GovTechCloud/api-service)
-[Frontend](https://github.com/GovTechCloud/app-web)
+- [Infra](https://github.com/GovTechCloud/infra)
+- [Backend](https://github.com/GovTechCloud/api-service)
+- [Frontend](https://github.com/GovTechCloud/app-web)
 
 ## 1. Tecnologías Utilizadas
 
