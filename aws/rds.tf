@@ -4,10 +4,12 @@
 
 variable "db_username" {
   default = "admin"
+  type    = string
 }
 
 variable "db_name" {
   default = "GovTechCloud"
+  type    = string
 }
 
 ############################################
