@@ -3,8 +3,8 @@ variable "aws_region" {
   type    = string
 }
 
-# Cambia esto por tu IP para seguridad
-variable "admin_ip" {
-  default = "0.0.0.0/0" # Mejor usar: "X.X.X.X/32"
-  type    = string
-}
+# # Cambia esto por tu IP para seguridad
+# variable "admin_ip" {
+#   default = "0.0.0.0/0" # Mejor usar: "X.X.X.X/32"
+#   type    = string
+# }

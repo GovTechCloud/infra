@@ -8,3 +8,5 @@ override.tf
 override.tf.json
 terraform.tfvars
 *.tfvars
+bastion_key*
+
