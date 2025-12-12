@@ -34,14 +34,9 @@ resource "aws_subnet" "public" {
 # SUBNETS PRIVADAS (2 AZ)
 ############################
 resource "aws_subnet" "private" {
-<<<<<<< Updated upstream
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.2.0/24"
-=======
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.2.0/24"
   availability_zone = "us-east-1a"
->>>>>>> Stashed changes
 
   tags = {
     Name = "free-tier-private-1a"

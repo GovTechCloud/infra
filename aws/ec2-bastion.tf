@@ -3,7 +3,12 @@
 ############################################
 resource "aws_key_pair" "bastion_key" {
   key_name   = "bastion-key"
-  public_key = file("bastion_key.pem.pub")
+  public_key = tls_private_key.bastion_key.public_key_openssh
+}
+
+resource "tls_private_key" "bastion_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
 ############################################
