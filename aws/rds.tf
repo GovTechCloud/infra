@@ -30,7 +30,7 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 
   subnet_ids = [
     aws_subnet.private.id,
-    aws_subnet.private_2.id # 👈 asegúrate de tener una segunda subnet privada
+    aws_subnet.private_2.id # asegúrate de tener una segunda subnet privada
   ]
 
   tags = {
